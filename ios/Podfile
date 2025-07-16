@@ -47,10 +47,5 @@ target 'Runner' do
         config.build_settings['DEFINES_MODULE'] = 'YES'
       end
     end
-      next unless File.exist?(header_path) && !File.exist?(modulemap_path)
-
-      File.write(modulemap_path, "module #{pod_name} {\n  umbrella header \"#{header_file}\"\n  export *\n  module * { export * }\n}\n")
-      puts "[Podfile] module.modulemap oluşturuldu: #{modulemap_path}"
-    end
   end
 end
