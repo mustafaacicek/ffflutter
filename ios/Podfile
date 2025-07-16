@@ -46,11 +46,19 @@ target 'Runner' do
       end
     end
 
-    # Firebase umbrella header için modulemap oluştur (non-modular header hatasını çözer)
-    firebase_header = File.join('Pods', 'Headers', 'Public', 'Firebase', 'Firebase.h')
-    firebase_modulemap = File.join('Pods', 'Headers', 'Public', 'Firebase', 'Firebase.modulemap')
-    if File.exist?(firebase_header) && !File.exist?(firebase_modulemap)
-      File.write(firebase_modulemap, "module Firebase {\n  umbrella header \"Firebase.h\"\n  export *\n  module * { export * }\n}")
+    # Firebase ve FirebaseMessaging umbrella header'ları için modulemap oluştur (non-modular header hatasını kalıcı olarak çözer)
+    sandbox_root = installer.sandbox.root
+
+    {
+      'Firebase' => 'Firebase.h',
+      'FirebaseMessaging' => 'FirebaseMessaging.h'
+    }.each do |pod_name, header_file|
+      header_path = File.join(sandbox_root, 'Headers', 'Public', pod_name, header_file)
+      modulemap_path = File.join(sandbox_root, 'Headers', 'Public', pod_name, 'module.modulemap')
+      next unless File.exist?(header_path) && !File.exist?(modulemap_path)
+
+      File.write(modulemap_path, "module #{pod_name} {\n  umbrella header \"#{header_file}\"\n  export *\n  module * { export * }\n}\n")
+      puts "[Podfile] module.modulemap oluşturuldu: #{modulemap_path}"
     end
   end
 end
