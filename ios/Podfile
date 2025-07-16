@@ -1,6 +1,5 @@
 platform :ios, '12.0'
 
-# CocoaPods analytics disables
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
 
 project 'Runner', {
@@ -10,43 +9,48 @@ project 'Runner', {
 }
 
 # Flutter root helper
-
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
   unless File.exist?(generated_xcode_build_settings_path)
-    raise "#{generated_xcode_build_settings_path} must exist. If you're running pod install manually, make sure `flutter pub get` is executed first"
+    raise "#{generated_xcode_build_settings_path} must exist. Run `flutter pub get` first."
   end
   File.foreach(generated_xcode_build_settings_path) do |line|
-    matches = line.match(/FLUTTER_ROOT\=(.*)/)
-    return matches[1].strip if matches
+    m = line.match(/FLUTTER_ROOT\=(.*)/)
+    return m[1].strip if m
   end
-  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}. Try updating."
+  raise "FLUTTER_ROOT not found in #{generated_xcode_build_settings_path}."
 end
 
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
 
 # ------------------------
-# Main iOS target
+# Main target
 # ------------------------
 
 target 'Runner' do
-  # Dinamik framework yerine statik link kullan (Flutter plugin uyumluluğu)
+  # Flutter eklentileri statik framework olarak kullan
   use_frameworks! :linkage => :static
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 
-  # Post-install düzeltmeleri
   post_install do |installer|
     installer.pods_project.targets.each do |target|
       flutter_additional_ios_build_settings(target)
 
       target.build_configurations.each do |config|
-        # Simulator için arm64 derlemesini hariç tut
+        # Simulator arm64 hariç
         config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
-        # Non-modular header hatasını bastır
+        # Non-modular uyarısını kapat
         config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
       end
+    end
+
+    # Firebase umbrella header için modulemap oluştur (non-modular header hatasını çözer)
+    firebase_header = File.join('Pods', 'Headers', 'Public', 'Firebase', 'Firebase.h')
+    firebase_modulemap = File.join('Pods', 'Headers', 'Public', 'Firebase', 'Firebase.modulemap')
+    if File.exist?(firebase_header) && !File.exist?(firebase_modulemap)
+      File.write(firebase_modulemap, "module Firebase {\n  umbrella header \"Firebase.h\"\n  export *\n  module * { export * }\n}")
     end
   end
 end
