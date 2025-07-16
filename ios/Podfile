@@ -9,7 +9,7 @@ project 'Runner', {
   'Release' => :release,
 }
 
-# Helper method to locate Flutter installation
+# Flutter root helper
 
 def flutter_root
   generated_xcode_build_settings_path = File.expand_path(File.join('..', 'Flutter', 'Generated.xcconfig'), __FILE__)
@@ -25,21 +25,27 @@ end
 
 require File.expand_path(File.join('packages', 'flutter_tools', 'bin', 'podhelper'), flutter_root)
 
+# ------------------------
 # Main iOS target
+# ------------------------
+
 target 'Runner' do
-  use_frameworks!
+  # Dinamik framework yerine statik link kullan (Flutter plugin uyumluluğu)
+  use_frameworks! :linkage => :static
   use_modular_headers!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
 
-  # Post-install fixes
+  # Post-install düzeltmeleri
   post_install do |installer|
     installer.pods_project.targets.each do |target|
       flutter_additional_ios_build_settings(target)
 
-      # Firebase / non-modular header fix
       target.build_configurations.each do |config|
+        # Simulator için arm64 derlemesini hariç tut
         config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
+        # Non-modular header hatasını bastır
+        config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
       end
     end
   end

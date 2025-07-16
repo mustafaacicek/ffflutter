@@ -16,6 +16,11 @@ workflows:
         script: |
           cd ios
           pod install
+      - name: Firebase modulemap fix
+        script: |
+          # firebase_messaging non-modular header hatasını önlemek için modulemap ekle
+          MODULE_MAP="module Firebase {\n  umbrella header \"Firebase.h\"\n  export *\n  module * { export * }\n}"
+          echo -e "$MODULE_MAP" > ios/Pods/Headers/Public/Firebase/Firebase.modulemap || true
       - name: Build iOS (release, no codesign)
         script: |
           flutter build ios --release --no-codesign --dart-define=BUNDLE_ID=$BUNDLE_ID
