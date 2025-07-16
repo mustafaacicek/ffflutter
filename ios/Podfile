@@ -43,17 +43,10 @@ target 'Runner' do
         config.build_settings['EXCLUDED_ARCHS[sdk=iphonesimulator*]'] = 'arm64'
         # Non-modular uyarısını kapat
         config.build_settings['CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES'] = 'YES'
+        # Tüm target'lar için module tanımını zorla
+        config.build_settings['DEFINES_MODULE'] = 'YES'
       end
     end
-
-    # Firebase ve FirebaseMessaging umbrella header'ları için modulemap oluştur (non-modular header hatasını kalıcı olarak çözer)
-    sandbox_root = installer.sandbox.root
-
-    {
-      'FirebaseMessaging' => 'FirebaseMessaging.h'
-    }.each do |pod_name, header_file|
-      header_path = File.join(sandbox_root, 'Headers', 'Public', pod_name, header_file)
-      modulemap_path = File.join(sandbox_root, 'Headers', 'Public', pod_name, 'module.modulemap')
       next unless File.exist?(header_path) && !File.exist?(modulemap_path)
 
       File.write(modulemap_path, "module #{pod_name} {\n  umbrella header \"#{header_file}\"\n  export *\n  module * { export * }\n}\n")
