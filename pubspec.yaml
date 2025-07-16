@@ -51,9 +51,9 @@ dependencies:
   flutter_cache_manager: ^3.3.1
   
   # Firebase
-  firebase_core: ^2.24.2
-  firebase_messaging: ^14.7.10
-  firebase_analytics: ^10.8.0
+  firebase_core: 2.14.0
+  firebase_messaging: 14.5.0
+  firebase_analytics: 10.4.0
   
   # Audio handling
   just_audio: ^0.9.36
