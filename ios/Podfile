@@ -50,7 +50,6 @@ target 'Runner' do
     sandbox_root = installer.sandbox.root
 
     {
-      'Firebase' => 'Firebase.h',
       'FirebaseMessaging' => 'FirebaseMessaging.h'
     }.each do |pod_name, header_file|
       header_path = File.join(sandbox_root, 'Headers', 'Public', pod_name, header_file)
